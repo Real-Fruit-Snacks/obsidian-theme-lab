@@ -2,6 +2,12 @@
 
 All notable changes to Theme Lab are listed here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and versions follow [Semantic Versioning](https://semver.org/).
 
+## [1.0.1] - 2026-09-13
+
+### Changed
+- Manifest description reworded for the community plugin review (no product name).
+- Inspect-mode crosshair cursor no longer uses `!important`.
+
 ## [1.0.0] - 2026-09-12
 
 ### Added
@@ -13,4 +19,5 @@ All notable changes to Theme Lab are listed here. The format follows [Keep a Cha
 - **Scratch A/B** matrix option and **Compare latest matrix run with the previous one**, both producing pixel-diff sheets.
 - Commands to capture one screenshot and toggle the colour scheme.
 
+[1.0.1]: https://github.com/Real-Fruit-Snacks/obsidian-theme-lab/releases/tag/1.0.1
 [1.0.0]: https://github.com/Real-Fruit-Snacks/obsidian-theme-lab/releases/tag/1.0.0

@@ -1,7 +1,7 @@
 /* Theme Lab — inspect overlay */
 .theme-lab-overlay { position: fixed; z-index: 99999; pointer-events: none; border: 2px solid var(--interactive-accent); background: color-mix(in srgb, var(--interactive-accent) 12%, transparent); box-sizing: border-box; transition: all 40ms linear; }
 .theme-lab-overlay::after { content: attr(data-label); position: absolute; left: 0; top: -20px; font: 11px/1.5 var(--font-monospace); background: var(--interactive-accent); color: var(--text-on-accent); padding: 0 6px; white-space: nowrap; max-width: 60vw; overflow: hidden; text-overflow: ellipsis; }
-body.theme-lab-inspecting, body.theme-lab-inspecting * { cursor: crosshair !important; }
+html body.theme-lab-inspecting, html body.theme-lab-inspecting *, html body.theme-lab-inspecting .clickable-icon, html body.theme-lab-inspecting a, html body.theme-lab-inspecting button { cursor: crosshair; }
 .theme-lab-status { color: var(--text-accent); font-weight: 600; }
 .theme-lab-html { padding: 8px 12px; border: 1px dashed var(--background-modifier-border); }
 
