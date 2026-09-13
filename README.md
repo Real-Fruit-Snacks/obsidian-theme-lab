@@ -1,6 +1,6 @@
 # Theme Lab
 
-**Build Obsidian themes from inside Obsidian.** Click any element and see which CSS rule wins. Capture every scheme × view × sidebar combination into contact sheets. Lint, contrast-check and inventory a theme in one report. Try CSS live, diff the screenshots, then append it to the theme.
+**Build Obsidian themes from inside the app.** Click any element and see which CSS rule wins. Capture every scheme × view × sidebar combination into contact sheets. Lint, contrast-check and inventory a theme in one report. Try CSS live, diff the screenshots, then append it to the theme.
 
 [![Site](https://img.shields.io/badge/site-real--fruit--snacks.github.io-E0554A)](https://real-fruit-snacks.github.io/obsidian-theme-lab/)
 [![Release](https://img.shields.io/github/v/release/Real-Fruit-Snacks/obsidian-theme-lab?color=E0554A)](https://github.com/Real-Fruit-Snacks/obsidian-theme-lab/releases/latest)

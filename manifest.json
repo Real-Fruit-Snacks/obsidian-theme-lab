@@ -1,9 +1,9 @@
 {
   "id": "theme-lab",
   "name": "Theme Lab",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "minAppVersion": "1.4.0",
-  "description": "Build themes from inside the app: inspect which CSS rule wins, capture a screenshot matrix into contact sheets, generate a showcase note, and write a lint, contrast and variables report.",
+  "description": "Build themes from inside the app. Inspect which CSS rule wins, capture a screenshot matrix into contact sheets, generate a showcase note, and write a lint, contrast and variables report.",
   "author": "Real-Fruit-Snacks",
   "authorUrl": "https://github.com/Real-Fruit-Snacks",
   "isDesktopOnly": true

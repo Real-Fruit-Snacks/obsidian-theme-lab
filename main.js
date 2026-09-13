@@ -243,7 +243,7 @@ const PRESETS = {
   artwork: { label: 'Artwork',            desc: 'Both schemes, Reading, sidebars closed, top of note only — the two captures for listing shots and README heroes.', schemes: { dark: true, light: true }, views: { reading: true, live: false, source: false }, sidebars: { open: false, closed: true }, extras: { settings: false, 'settings-editor': false, 'settings-plugins': false, palette: false, switcher: false, menu: false, 'editor-menu': false, tooltip: false, hover: false, preview: false, search: false, 'right-sidebar': false, graph: false, notice: false }, targets: '-' },
 };
 
-const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+const sleep = (ms) => new Promise((r) => window.setTimeout(r, ms));
 const pad = (n) => String(n).padStart(2, '0');
 const slug = (s) => String(s).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 40) || 'x';
 
@@ -413,15 +413,17 @@ function inspectReport(el) {
   return lines.join('\n');
 }
 
+let _app;
+const isElement = (t) => !!t && typeof t.instanceOf === 'function' && t.instanceOf(Element);
 function currentThemeName() {
-  try { return (window.app && app.customCss && app.customCss.theme) || 'Default'; } catch (e) { return 'unknown'; }
+  try { return (_app && _app.customCss && _app.customCss.theme) || 'Default'; } catch (e) { return 'unknown'; }
 }
 
 // ---------- colour + contrast ----------
 let _ctx;
 function parseColor(str) {
   if (!str) return null;
-  if (!_ctx) { const c = document.createElement('canvas'); c.width = c.height = 1; _ctx = c.getContext('2d', { willReadFrequently: true }); }
+  if (!_ctx) { const c = createEl('canvas'); c.width = c.height = 1; _ctx = c.getContext('2d', { willReadFrequently: true }); }
   _ctx.clearRect(0, 0, 1, 1);
   _ctx.fillStyle = '#000'; _ctx.fillStyle = str.trim();
   if (_ctx.fillStyle === '#000000' && !/^(#000|black|rgb\(0,\s*0,\s*0)/.test(str.trim())) { /* maybe unparsable */ }
@@ -451,6 +453,7 @@ const CONTRAST_PAIRS = [
 // ---------- the plugin ----------
 class ThemeLabPlugin extends Plugin {
   async onload() {
+    _app = this.app;
     await this.loadSettings();
     this.inspecting = false;
     this.addSettingTab(new ThemeLabSettingTab(this.app, this));
@@ -460,7 +463,7 @@ class ThemeLabPlugin extends Plugin {
     this.statusEl.hide();
 
     this.registerView(VIEW_TYPE, (leaf) => new ThemeLabView(leaf, this));
-    this.addCommand({ id: 'panel', name: 'Open Theme Lab panel', callback: () => this.openPanel() });
+    this.addCommand({ id: 'panel', name: 'Open panel', callback: () => this.openPanel() });
     this.applyScratch();
     this.addCommand({ id: 'inspect', name: 'Inspect element (click to copy CSS report)', callback: () => this.toggleInspect() });
     this.addCommand({ id: 'showcase', name: 'Create or open the showcase note', callback: () => this.openShowcase() });
@@ -471,16 +474,19 @@ class ThemeLabPlugin extends Plugin {
     this.addCommand({ id: 'toggle-scheme', name: 'Toggle dark/light scheme', callback: () => this.toggleScheme() });
   }
 
-  onunload() { this.stopInspect(); const st = document.getElementById('theme-lab-scratch'); if (st) st.remove(); }
+  onunload() { this.stopInspect(); if (this._scratchSheet) { document.adoptedStyleSheets = document.adoptedStyleSheets.filter((x) => x !== this._scratchSheet); this._scratchSheet = null; } }
   async openPanel() {
     let leaf = this.app.workspace.getLeavesOfType(VIEW_TYPE)[0];
     if (!leaf) { leaf = this.app.workspace.getRightLeaf(false); await leaf.setViewState({ type: VIEW_TYPE, active: true }); }
     this.app.workspace.revealLeaf(leaf);
   }
   applyScratch() {
-    let st = document.getElementById('theme-lab-scratch');
-    if (!st) { st = document.createElement('style'); st.id = 'theme-lab-scratch'; document.head.appendChild(st); }
-    st.textContent = this.settings.scratchEnabled ? `/* Theme Lab scratch */\n${this.settings.scratchCss}` : '';
+    if (!this._scratchSheet) { this._scratchSheet = new CSSStyleSheet(); document.adoptedStyleSheets = [...document.adoptedStyleSheets, this._scratchSheet]; }
+    this.setScratchText(this.settings.scratchEnabled ? `/* Theme Lab scratch */\n${this.settings.scratchCss}` : '');
+  }
+  setScratchText(css) { this._scratchText = css; try { this._scratchSheet.replaceSync(css); } catch (e) { this._scratchSheet.replaceSync(''); } }
+  scratchText() { return this._scratchText || ''; }
+  hasScratchSheet() { return !!this._scratchSheet;
   }
   panel() { const l = this.app.workspace.getLeavesOfType(VIEW_TYPE)[0]; return l && l.view instanceof ThemeLabView ? l.view : null; }
   async loadSettings() { this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData()); for (const k of ['schemes', 'views', 'sidebars', 'extras']) this.settings[k] = Object.assign({}, DEFAULT_SETTINGS[k], this.settings[k]); }
@@ -491,11 +497,11 @@ class ThemeLabPlugin extends Plugin {
   startInspect() {
     this.inspecting = true;
     document.body.addClass('theme-lab-inspecting');
-    this.statusEl.setText('INSPECT · click an element · Esc to stop'); this.statusEl.show();
+    this.statusEl.setText('Inspect · click an element · Esc to stop'); this.statusEl.show();
     this.overlay = document.body.createDiv({ cls: 'theme-lab-overlay' });
-    this._move = (e) => { const t = e.target; if (!(t instanceof Element) || t === this.overlay || t.closest('.theme-lab-panel')) return; const r = t.getBoundingClientRect(); Object.assign(this.overlay.style, { left: r.left + 'px', top: r.top + 'px', width: r.width + 'px', height: r.height + 'px' }); this.overlay.dataset.label = t.tagName.toLowerCase() + (t.classList.length ? '.' + t.classList[0] : ''); };
+    this._move = (e) => { const t = e.target; if (!isElement(t) || t === this.overlay || t.closest('.theme-lab-panel')) return; const r = t.getBoundingClientRect(); this.overlay.setCssProps({ '--theme-lab-x': r.left + 'px', '--theme-lab-y': r.top + 'px', '--theme-lab-w': r.width + 'px', '--theme-lab-h': r.height + 'px' }); this.overlay.dataset.label = t.tagName.toLowerCase() + (t.classList.length ? '.' + t.classList[0] : ''); };
     this._click = async (e) => {
-      const t = e.target; if (!(t instanceof Element) || t === this.overlay) return;
+      const t = e.target; if (!isElement(t) || t === this.overlay) return;
       if (t.closest('.theme-lab-panel')) return;
       e.preventDefault(); e.stopPropagation();
       const report = inspectReport(t);
@@ -662,10 +668,10 @@ class ThemeLabPlugin extends Plugin {
   async captureShot(name, dir, ab) {
     if (!ab) { const path = await this.capture(name, { dir }); return { path, pane: this.lastPane }; }
     // A = scratch off, B = scratch on; the B image is the canonical capture
-    const st = document.getElementById('theme-lab-scratch'); const saved = st ? st.textContent : '';
-    if (st) st.textContent = ''; await sleep(120);
+    const hasSheet = this.hasScratchSheet(); const saved = this.scratchText();
+    if (hasSheet) this.setScratchText(''); await sleep(120);
     const a = await this.capture(name + '-a', { dir, crops: false });
-    if (st) st.textContent = saved; await sleep(120);
+    if (hasSheet) this.setScratchText(saved); await sleep(120);
     const path = await this.capture(name, { dir }); const pane = this.lastPane;
     const r = await this.diffImages(a, path, normalizePath(`${dir}/${name}-diff.png`));
     this._abRows && this._abRows.push({ name, changed: r.changed, out: r.out });
@@ -815,14 +821,14 @@ class ThemeLabPlugin extends Plugin {
   async loadImage(path) {
     const buf = await this.app.vault.adapter.readBinary(path);
     const url = URL.createObjectURL(new Blob([buf], { type: 'image/png' }));
-    try { return await new Promise((res, rej) => { const im = new Image(); im.onload = () => res(im); im.onerror = rej; im.src = url; }); } finally { setTimeout(() => URL.revokeObjectURL(url), 1000); }
+    try { return await new Promise((res, rej) => { const im = new Image(); im.onload = () => res(im); im.onerror = rej; im.src = url; }); } finally { window.setTimeout(() => URL.revokeObjectURL(url), 1000); }
   }
   // shared chrome for contact sheets: header band, numbered tile labels, framed cells, footer
   sheetCanvas(n, cols, cellW, cellH) {
     const pad = 20, lab = 34, head = 84, foot = 40;
     cols = Math.max(1, Math.min(cols, n));
     const rows = Math.ceil(n / cols);
-    const c = document.createElement('canvas'); c.width = pad + cols * (cellW + pad); c.height = head + rows * (cellH + lab + pad) + foot;
+    const c = createEl('canvas'); c.width = pad + cols * (cellW + pad); c.height = head + rows * (cellH + lab + pad) + foot;
     const g = c.getContext('2d');
     return { c, g, pad, lab, head, rows, cell: (i) => ({ x: pad + (i % cols) * (cellW + pad), y: head + Math.floor(i / cols) * (cellH + lab + pad) }) };
   }
@@ -925,7 +931,7 @@ class ThemeLabPlugin extends Plugin {
   }
   esc() { document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', code: 'Escape', bubbles: true })); }
   closeModals() { document.querySelectorAll('.modal-container .modal-bg').forEach((bg) => bg.click()); this.esc(); }
-  waitFor(selector, ms) { return new Promise((resolve) => { const t0 = Date.now(); const tick = () => { const el = document.querySelector(selector); if (el && el.getBoundingClientRect().width > 0) return resolve(el); if (Date.now() - t0 > ms) return resolve(null); setTimeout(tick, 60); }; tick(); }); }
+  waitFor(selector, ms) { return new Promise((resolve) => { const t0 = Date.now(); const tick = () => { const el = document.querySelector(selector); if (el && el.getBoundingClientRect().width > 0) return resolve(el); if (Date.now() - t0 > ms) return resolve(null); window.setTimeout(tick, 60); }; tick(); }); }
   async closeLeavesOfType(type) { this.app.workspace.getLeavesOfType(type).forEach((l) => l.detach()); await sleep(200); }
 
   async captureExtra(kind, name, dir) {
@@ -1016,7 +1022,7 @@ class ThemeLabPlugin extends Plugin {
   }
 
   // ----- diffs -----
-  imageData(im) { const c = document.createElement('canvas'); c.width = im.width; c.height = im.height; const g = c.getContext('2d', { willReadFrequently: true }); g.drawImage(im, 0, 0); return { canvas: c, ctx: g, data: g.getImageData(0, 0, c.width, c.height) }; }
+  imageData(im) { const c = createEl('canvas'); c.width = im.width; c.height = im.height; const g = c.getContext('2d', { willReadFrequently: true }); g.drawImage(im, 0, 0); return { canvas: c, ctx: g, data: g.getImageData(0, 0, c.width, c.height) }; }
   async diffImages(pathA, pathB, outPath) {
     const [a, b] = await Promise.all([this.loadImage(pathA), this.loadImage(pathB)]);
     if (a.width !== b.width || a.height !== b.height) return { changed: 1, note: 'size differs', out: null };
@@ -1319,7 +1325,7 @@ class ThemeLabView extends ItemView {
       const v = cs.getPropertyValue(n).trim(); const tr = t.createEl('tr');
       tr.createEl('td', { text: n, cls: 'theme-lab-prop' });
       const td = tr.createEl('td', { cls: 'theme-lab-val' });
-      if (v && looksLikeColor(v)) { const sw = td.createSpan({ cls: 'theme-lab-swatch' }); sw.style.background = v; }
+      if (v && looksLikeColor(v)) { const sw = td.createSpan({ cls: 'theme-lab-swatch' }); sw.setCssProps({ '--theme-lab-swatch': v }); }
       td.createEl('code', { text: v || '(unset)', cls: v ? '' : 'theme-lab-unset' });
     }
   }
@@ -1368,7 +1374,7 @@ class ThemeLabView extends ItemView {
       const w = winners[prop]; const tr = table.createEl('tr');
       tr.createEl('td', { text: prop, cls: 'theme-lab-prop' });
       const td = tr.createEl('td', { cls: 'theme-lab-val' });
-      if (looksLikeColor(w.value)) { const sw = td.createSpan({ cls: 'theme-lab-swatch' }); sw.style.background = w.value; }
+      if (looksLikeColor(w.value)) { const sw = td.createSpan({ cls: 'theme-lab-swatch' }); sw.setCssProps({ '--theme-lab-swatch': w.value }); }
       td.createEl('code', { text: w.value + (w.imp ? ' !important' : '') });
       const sel = td.createEl('div', { cls: 'theme-lab-sel' });
       sel.createSpan({ text: w.ru.selector });
@@ -1516,7 +1522,7 @@ class ThemeLabSettingTab extends PluginSettingTab {
 
     new Setting(containerEl).setName('Capture').setHeading();
     new Setting(containerEl).setName('Settle time (ms)').setDesc('Wait after each scheme, view or scroll change before capturing. Raise it if shots catch a transition.').addSlider((sl) => sl.setLimits(200, 2000, 100).setValue(s.settleMs).setDynamicTooltip().onChange(async (v) => { s.settleMs = v; await save(); }));
-    new Setting(containerEl).setName('Force Readable line length').setDesc('Turned on for the run and restored afterwards. Listing screenshots are expected to use it.').addToggle((t) => t.setValue(s.forceReadable).onChange(async (v) => { s.forceReadable = v; await save(); }));
+    new Setting(containerEl).setName('Force readable line length').setDesc('Turned on for the run and restored afterwards. Listing screenshots are expected to use it.').addToggle((t) => t.setValue(s.forceReadable).onChange(async (v) => { s.forceReadable = v; await save(); }));
     new Setting(containerEl).setName('Left sidebar content').setDesc('Which pane the left sidebar shows in "sidebars open" captures.').addDropdown((d) => d.addOption('file-explorer', 'File explorer').addOption('search', 'Search').setValue(s.leftTab).onChange(async (v) => { s.leftTab = v; await save(); }));
 
     new Setting(containerEl).setName('Output').setHeading();

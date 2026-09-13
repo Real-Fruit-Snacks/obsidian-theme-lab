@@ -1,5 +1,5 @@
 /* Theme Lab — inspect overlay */
-.theme-lab-overlay { position: fixed; z-index: 99999; pointer-events: none; border: 2px solid var(--interactive-accent); background: color-mix(in srgb, var(--interactive-accent) 12%, transparent); box-sizing: border-box; transition: all 40ms linear; }
+.theme-lab-overlay { position: fixed; left: var(--theme-lab-x, 0); top: var(--theme-lab-y, 0); width: var(--theme-lab-w, 0); height: var(--theme-lab-h, 0); z-index: 99999; pointer-events: none; border: 2px solid var(--interactive-accent); background: color-mix(in srgb, var(--interactive-accent) 12%, transparent); box-sizing: border-box; transition: all 40ms linear; }
 .theme-lab-overlay::after { content: attr(data-label); position: absolute; left: 0; top: -20px; font: 11px/1.5 var(--font-monospace); background: var(--interactive-accent); color: var(--text-on-accent); padding: 0 6px; white-space: nowrap; max-width: 60vw; overflow: hidden; text-overflow: ellipsis; }
 html body.theme-lab-inspecting, html body.theme-lab-inspecting *, html body.theme-lab-inspecting .clickable-icon, html body.theme-lab-inspecting a, html body.theme-lab-inspecting button { cursor: crosshair; }
 .theme-lab-status { color: var(--text-accent); font-weight: 600; }
@@ -77,7 +77,7 @@ html body.theme-lab-inspecting, html body.theme-lab-inspecting *, html body.them
 .theme-lab-prop { white-space: nowrap; color: var(--text-muted); width: 38%; font-family: var(--font-monospace); font-size: var(--font-smallest); }
 .theme-lab-val code { font-size: var(--font-smallest); background: transparent; padding: 0; }
 .theme-lab-unset { color: var(--text-faint); font-style: italic; }
-.theme-lab-swatch { display: inline-block; width: 11px; height: 11px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; border: 1px solid var(--background-modifier-border-hover); }
+.theme-lab-swatch { display: inline-block; background: var(--theme-lab-swatch, transparent); width: 11px; height: 11px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; border: 1px solid var(--background-modifier-border-hover); }
 .theme-lab-sel { display: flex; flex-direction: column; gap: 1px; margin-top: 2px; font-family: var(--font-monospace); font-size: var(--font-smallest); color: var(--text-faint); word-break: break-all; }
 .theme-lab-sel-meta { color: var(--text-faint); opacity: .8; }
 

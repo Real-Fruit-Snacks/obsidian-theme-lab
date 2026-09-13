@@ -2,6 +2,17 @@
 
 All notable changes to Theme Lab are listed here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and versions follow [Semantic Versioning](https://semver.org/).
 
+## [1.0.2] - 2026-09-13
+
+### Changed
+- Scratch CSS is applied through a constructed stylesheet (`document.adoptedStyleSheets`) instead of a `<style>` element.
+- Inspect overlay is positioned through CSS variables rather than inline styles.
+- Canvases are created with `createEl`, timers use `window.setTimeout`, DOM type checks use `instanceOf`, and the theme name is read through the plugin's `app` rather than the global.
+- Command renamed to **Open panel**; manifest description no longer contains a colon.
+
+### Fixed
+- README and site opener no longer say "from inside Obsidian" twice.
+
 ## [1.0.1] - 2026-09-13
 
 ### Changed
@@ -19,5 +30,6 @@ All notable changes to Theme Lab are listed here. The format follows [Keep a Cha
 - **Scratch A/B** matrix option and **Compare latest matrix run with the previous one**, both producing pixel-diff sheets.
 - Commands to capture one screenshot and toggle the colour scheme.
 
+[1.0.2]: https://github.com/Real-Fruit-Snacks/obsidian-theme-lab/releases/tag/1.0.2
 [1.0.1]: https://github.com/Real-Fruit-Snacks/obsidian-theme-lab/releases/tag/1.0.1
 [1.0.0]: https://github.com/Real-Fruit-Snacks/obsidian-theme-lab/releases/tag/1.0.0
