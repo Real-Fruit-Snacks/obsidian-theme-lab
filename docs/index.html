@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Theme Lab — build Obsidian themes from inside Obsidian</title>
+<meta name="description" content="Theme Lab is an Obsidian plugin for theme authors: inspect which CSS rule wins, capture a screenshot matrix into contact sheets, generate a showcase note, and write a lint, contrast and variables report.">
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<meta property="og:title" content="Theme Lab for Obsidian">
+<meta property="og:description" content="Inspect which rule wins. Capture every scheme × view × sidebar combination. Lint, contrast-check and inventory a theme in one report.">
+<meta property="og:image" content="https://real-fruit-snacks.github.io/obsidian-theme-lab/assets/screenshot.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/rfs.css">
+<style>
+  :root{ --accent:#E0554A; --accent-2:#F2B65C; }
+  .shots-3 { display:grid; grid-template-columns: 1fr 1fr 1fr; gap:12px; align-items:start; }
+  .shots-3 figure { margin:0; background:var(--panel); border:1px solid var(--line); border-radius:14px; padding:10px; }
+  .shots-3 img { border-radius:8px; border:1px solid var(--line); }
+  .shots-3 figcaption { color:var(--text-3); font-size:13px; padding:10px 4px 2px; }
+  .cmd { display:grid; grid-template-columns: 1fr; gap:8px; }
+  .cmd div { display:flex; gap:14px; align-items:baseline; padding:10px 14px; background:var(--panel); border:1px solid var(--line); border-radius:var(--r-s); }
+  .cmd code { white-space:nowrap; }
+  .cmd span { color:var(--text-2); font-size:14.5px; }
+  @media (max-width:860px){ .shots-3 { grid-template-columns:1fr; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="site-header">
+    <a class="owner" href="https://github.com/Real-Fruit-Snacks"><i></i>Real-Fruit-Snacks</a>
+    <span class="crumb">/</span><span class="proj">Theme Lab</span>
+    <nav>
+      <a href="#features">Features</a>
+      <a href="#workflow">Workflow</a>
+      <a href="#install">Install</a>
+      <a href="#changelog">Changelog</a>
+      <a class="gh" href="https://github.com/Real-Fruit-Snacks/obsidian-theme-lab">GitHub</a>
+    </nav>
+  </header>
+
+  <div class="hero">
+    <div class="pill"><b>Plugin</b> for theme authors · desktop</div>
+    <h1>Build Obsidian themes from inside Obsidian.</h1>
+    <p class="lede">Click any element and see which CSS rule wins. Capture every scheme × view × sidebar combination into contact sheets. Lint, contrast-check and inventory a theme in one report.</p>
+    <div class="actions">
+      <a class="btn primary" href="#install">Install Theme Lab</a>
+      <a class="btn secondary" href="https://github.com/Real-Fruit-Snacks/obsidian-theme-lab">View source</a>
+    </div>
+    <div class="frame"><img src="assets/hero.png" alt="Theme Lab: the panel with an inspected callout, a contact sheet and a theme report"></div>
+  </div>
+
+  <section id="features">
+    <h2>Four tools, one panel</h2>
+    <p class="sub">Everything a theme author does by hand, done by the plugin — and written into your vault as notes and images.</p>
+    <div class="grid">
+      <div class="f"><div class="ic">⌖</div><h3>Inspect element</h3><p>Click anything. Get the DOM path, the pruned HTML, the computed values, and every matching rule with specificity and origin — with a ★ on the declaration that actually won each property. "Why didn't my rule apply?" in one click.</p></div>
+      <div class="f"><div class="ic">▦</div><h3>Screenshot matrix</h3><p>Dark and light × Reading, Live Preview, Source × sidebars open and closed, at the top of the note and every H2, paging through long sections. Then fourteen chrome captures per scheme: settings, palette, switcher, menus, tooltips, hover, preview, search, sidebar, graph, notice.</p></div>
+      <div class="f"><div class="ic">▤</div><h3>Contact sheets</h3><p>A hundred captures become a dozen labelled sheets you can actually review — one per combination, an overview, one for the chrome. Each capture also gets a 1200×800 listing crop and a 1920-wide hero.</p></div>
+      <div class="f"><div class="ic">¶</div><h3>Showcase note</h3><p>Every Markdown feature a theme has to style: properties, inline formatting, six headings, lists and tasks with custom states, all thirteen callouts plus the odd ones, code, tables, embeds, math, Mermaid, footnotes — and a checklist of the chrome.</p></div>
+      <div class="f"><div class="ic">✓</div><h3>Theme report</h3><p>The lint the community review runs, WCAG contrast for both schemes side by side, every declared variable with its dark and light value, variables set in one scheme only, and the Obsidian classes on screen the theme never mentions.</p></div>
+      <div class="f"><div class="ic">≈</div><h3>Scratch CSS and diffs</h3><p>Try CSS live in the panel. Run the matrix with Scratch A/B to get a pixel-diff sheet of what changed, or compare any two runs. Then append it to theme.css with one button.</p></div>
+    </div>
+  </section>
+
+  <section id="screens">
+    <h2>What it looks like</h2>
+    <p class="sub">Built with Obsidian's own components, so it follows whatever theme is active — including the one you're building.</p>
+    <div class="shots-3">
+      <figure><img src="assets/panel.png" alt="The Theme Lab panel: toolbar, inspector, scratch CSS, variables, runs"><figcaption>The panel — inspector, scratch CSS, variable watch, runs.</figcaption></figure>
+      <figure><img src="assets/matrix-modal.png" alt="The capture matrix dialog with presets and toggles"><figcaption>The matrix dialog — presets, toggles, a live estimate.</figcaption></figure>
+      <figure><img src="assets/report.png" alt="A theme report note"><figcaption>A theme report — summary, lint, contrast side by side.</figcaption></figure>
+    </div>
+    <div class="frame" style="margin-top:24px"><img src="assets/sheet-overview.png" alt="An overview contact sheet: the same note in dark and light"></div>
+  </section>
+
+  <section id="workflow">
+    <div class="two">
+      <div>
+        <h2>Workflow</h2>
+        <p class="sub">The loop, without the reloading and squinting.</p>
+        <ol class="steps">
+          <li><b>Showcase</b> Create the showcase note and read it once in each view. It's the checklist.</li>
+          <li><b>Capture</b> Run the matrix with a preset. Open <code>Matrix.md</code> in the run folder and look at the sheets.</li>
+          <li><b>Inspect</b> When something's wrong, click it. The panel shows which rule won and why.</li>
+          <li><b>Fix</b> Write the change in Scratch CSS, watch it apply, re-run with Scratch A/B to see the diff, append to theme.css.</li>
+          <li><b>Report</b> Before a release, write the report and clear the Lint section.</li>
+        </ol>
+        <div class="callout"><b>Reviewing with someone else?</b> Send the contact sheets, never individual shots. Fourteen sheets cover a full review.</div>
+      </div>
+      <div class="cmd">
+        <div><code>Open Theme Lab panel</code></div>
+        <div><code>Create or open the showcase note</code></div>
+        <div><code>Capture screenshot matrix</code><span>presets: Full review · Quick check · Editor pass · Chrome only · Artwork</span></div>
+        <div><code>Inspect element</code><span>click to copy a CSS report</span></div>
+        <div><code>Write theme report</code><span>variables, contrast, lint</span></div>
+        <div><code>Compare latest matrix run with the previous one</code></div>
+        <div><code>Capture one screenshot now</code></div>
+        <div><code>Toggle dark/light scheme</code></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="install">
+    <div class="two">
+      <div>
+        <h2>Install</h2>
+        <p class="sub">From the community list, or three files by hand.</p>
+        <ol class="steps">
+          <li><b>Community plugins</b> Settings → Community plugins → Browse → search "Theme Lab".</li>
+          <li><b>Manual</b> Download <code>main.js</code>, <code>styles.css</code> and <code>manifest.json</code> from the <a href="https://github.com/Real-Fruit-Snacks/obsidian-theme-lab/releases/latest">latest release</a> into <code>.obsidian/plugins/theme-lab/</code>, then enable it.</li>
+        </ol>
+        <div class="callout"><b>Desktop only.</b> Screenshots use Electron's <code>capturePage</code>, and real pointer and right-click events make hover states and menus appear. Nothing leaves your machine.</div>
+      </div>
+<pre><code>.obsidian/
+  plugins/
+    theme-lab/
+      main.js
+      styles.css
+      manifest.json
+
+Theme Lab/                 in your vault
+  Glow/
+    2026-09-12 194652/
+      Matrix.md
+      sheets/
+      shots/
+    Report 2026-09-12 …md</code></pre>
+    </div>
+  </section>
+
+  <section id="changelog" class="left">
+    <h2>Changelog</h2>
+    <p class="sub">Bare version numbers as tags; releases are built by the workflow.</p>
+    <div class="release">
+      <div class="v">1.0.0<small>2026-09-12</small></div>
+      <ul>
+        <li>Inspect element with the winning declaration per property.</li>
+        <li>Screenshot matrix with section paging, fourteen chrome captures per scheme, and labelled contact sheets.</li>
+        <li>Showcase note covering every Markdown feature and the chrome checklist.</li>
+        <li>Theme report: lint, side-by-side contrast, variables in both schemes, unreferenced classes.</li>
+        <li>Panel with Scratch CSS, Scratch A/B diffs and run comparison.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section id="projects">
+    <h2>More from Real-Fruit-Snacks</h2>
+    <p class="sub">The themes were built with this plugin.</p>
+    <div class="proj">
+      <a href="https://real-fruit-snacks.github.io/obsidian-Thoughtbin/"><i style="background:#7C9CFF"></i><b>Thoughtbin</b><span>Obsidian plugin — a private timeline for quick thoughts</span></a>
+      <a href="#" aria-current="page"><i style="background:#E0554A"></i><b>Theme Lab</b><span>Obsidian plugin — build themes from inside Obsidian</span></a>
+      <a href="https://real-fruit-snacks.github.io/obsidian-glow/"><i style="background:#B48CFF"></i><b>Glow</b><span>Obsidian theme — calm dark with a little light</span></a>
+      <a href="https://real-fruit-snacks.github.io/obsidian-outrun/"><i style="background:#FF3FA4"></i><b>Outrun</b><span>Obsidian theme — 1986 never ended</span></a>
+      <a href="https://real-fruit-snacks.github.io/obsidian-dossier/"><i style="background:#CBAA6C"></i><b>Dossier</b><span>Obsidian theme — every note is a case file</span></a>
+      <a href="https://real-fruit-snacks.github.io/obsidian-comic/"><i style="background:#FFD23F"></i><b>Comic</b><span>Obsidian theme — your notes, printed in colour</span></a>
+      <a href="https://real-fruit-snacks.github.io/obsidian-grimoire/"><i style="background:#8A6EFF"></i><b>Grimoire</b><span>Obsidian theme — every note is a tarot card</span></a>
+    </div>
+  </section>
+
+  <footer class="site-footer">
+    <span>Theme Lab by <a href="https://github.com/Real-Fruit-Snacks">Real-Fruit-Snacks</a> · MIT</span>
+    <span>No network requests. Everything stays in your vault.</span>
+  </footer>
+</div>
+</body>
+</html>

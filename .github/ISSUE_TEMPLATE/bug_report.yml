@@ -1,0 +1,38 @@
+name: Bug report
+description: Something in Theme Lab doesn't work as described
+labels: [bug]
+body:
+  - type: input
+    id: versions
+    attributes:
+      label: Versions
+      description: Obsidian version, Theme Lab version, operating system
+      placeholder: Obsidian 1.9.x · Theme Lab 1.0.0 · Linux
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options: [Inspect element, Screenshot matrix, Contact sheets, Showcase note, Theme report, Panel / Scratch CSS, Settings, Other]
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: 1. Run "Capture screenshot matrix" with the Chrome only preset…
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What you expected, and what happened instead
+    validations:
+      required: true
+  - type: textarea
+    id: console
+    attributes:
+      label: Developer console output
+      description: Ctrl/Cmd+Shift+I → Console; paste anything mentioning Theme Lab
+      render: text

@@ -1,0 +1,16 @@
+name: Feature request
+description: Something Theme Lab should do
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: The problem
+      description: What you're trying to do while building a theme, and where the plugin gets in the way or stops short
+    validations:
+      required: true
+  - type: textarea
+    id: idea
+    attributes:
+      label: The idea
+      description: Optional — how you imagine it working
