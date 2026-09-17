@@ -435,6 +435,51 @@ function over(fg, bg) { const a = fg[3]; return [fg[0] * a + bg[0] * (1 - a), fg
 function lum(c) { const f = (v) => { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); }; return 0.2126 * f(c[0]) + 0.7152 * f(c[1]) + 0.0722 * f(c[2]); }
 function contrast(fg, bg) { const a = lum(fg) + 0.05, b = lum(bg) + 0.05; return a > b ? a / b : b / a; }
 
+// Accessibility checks the CSS can answer on its own. Each returns findings with a line number.
+function a11yCss(css) {
+  const out = [];
+  if (!css) return out;
+  const src = css.replace(/url\(data:[^)]*\)/g, 'url(…)');   // embedded fonts would drown the line numbers
+  const lineAt = (i) => src.slice(0, i).split('\n').length;
+  const add = (rule, level, text, i, detail) => out.push({ rule, level, text, line: i === null ? null : lineAt(i), detail: detail || '' });
+
+  // Motion that a reader could be sensitive to: keyframe animations, anything that moves, and slow fades.
+  // A 120 ms colour transition on hover is not that, so it is not counted.
+  const keyframes = [...src.matchAll(/@keyframes\s+[\w-]+/g)];
+  const anims = [...src.matchAll(/(?:^|[;{\s])animation\s*:\s*([^;}]+)/g)];
+  const moving = [...src.matchAll(/(?:^|[;{\s])transition\s*:\s*([^;}]+)/g)].filter((m) => /transform|all\b/.test(m[1]) || (Number((m[1].match(/([\d.]+)s/) || [])[1]) >= 0.4) || (Number((m[1].match(/(\d+)ms/) || [])[1]) >= 400));
+  const motion = [...keyframes, ...anims, ...moving];
+  const guard = /@media[^{]*prefers-reduced-motion[^{]*\{/i.test(src);
+  if (motion.length && !guard) add('a11y/reduced-motion', keyframes.length || anims.length ? 'Error' : 'Warning', `${keyframes.length} keyframe animation${keyframes.length === 1 ? '' : 's'}, ${anims.length} \`animation\` declaration${anims.length === 1 ? '' : 's'} and ${moving.length} moving or slow transition${moving.length === 1 ? '' : 's'}, with no \`@media (prefers-reduced-motion: reduce)\` block. WCAG 2.3.3.`, motion[0].index);
+  else if (motion.length) add('a11y/reduced-motion', 'Pass', `${motion.length} animated declaration${motion.length === 1 ? '' : 's'}, guarded by a reduced-motion block.`, null);
+  else add('a11y/reduced-motion', 'Pass', 'Nothing animates beyond short colour fades.', null);
+
+  // focus rings
+  const killed = [...src.matchAll(/outline\s*:\s*(none|0)\b/g)];
+  const replaced = /:focus-visible[^{]*\{[^}]*(outline|box-shadow)\s*:/.test(src);
+  for (const m of killed.slice(0, 6)) add('a11y/focus-ring', replaced ? 'Warning' : 'Error', replaced ? 'Removes the focus outline; a `:focus-visible` rule replaces it elsewhere — check this selector is covered.' : 'Removes the focus outline with no `:focus-visible` replacement anywhere; keyboard users lose their place.', m.index);
+  if (!killed.length) add('a11y/focus-ring', 'Pass', 'No `outline: none`.', null);
+
+  // type size
+  const small = [...src.matchAll(/font-size\s*:\s*(\d+(?:\.\d+)?)px/g)].filter((m) => Number(m[1]) > 0 && Number(m[1]) < 11);
+  for (const m of small.slice(0, 6)) add('a11y/small-text', 'Warning', `Text at ${m[1]}px; below about 11px is hard to read and cannot be scaled by the reader.`, m.index);
+  // only the content root itself, not its descendants: `.markdown-rendered code { font-size: 10px }` is fine
+  const body = [...src.matchAll(/(\.markdown-preview-view|\.markdown-rendered|\.cm-content|\.markdown-source-view)(\s*,[^{}]*)?\s*\{[^}]*font-size\s*:\s*\d+(?:\.\d+)?px/g)];
+  for (const m of body.slice(0, 4)) add('a11y/fixed-body-size', 'Warning', 'Body text is pinned to a pixel size, so the reader\'s font-size setting does nothing. Use `var(--font-text-size)` or `em`.', m.index);
+
+  // selection and glow
+  const noSelect = [...src.matchAll(/user-select\s*:\s*none/g)];
+  for (const m of noSelect.slice(0, 4)) {
+    const around = src.slice(Math.max(0, m.index - 220), m.index);
+    const onText = /(markdown-preview|markdown-rendered|cm-content|cm-line|markdown-source)/.test(around);
+    if (onText) add('a11y/user-select', 'Warning', 'Note text cannot be selected; that breaks copying and screen-reader selection.', m.index);
+  }
+  const glow = [...src.matchAll(/(\.markdown-preview-view|\.markdown-rendered|\.cm-line|\.cm-content)[^{}]*\{[^}]*text-shadow\s*:\s*[^;}]+/g)];
+  for (const m of glow.slice(0, 3)) add('a11y/text-shadow', 'Info', 'Body text carries a text-shadow. A glow is fine as flavour, but it lowers effective contrast — check the contrast table below.', m.index);
+
+  return out;
+}
+
 const CONTRAST_PAIRS = [
   ['--text-normal', '--background-primary', 'Body text on note'],
   ['--text-muted', '--background-primary', 'Muted text on note'],
@@ -448,6 +493,9 @@ const CONTRAST_PAIRS = [
   ['--status-bar-text-color', '--status-bar-background', 'Status bar'],
   ['--tab-text-color-active', '--tab-background-active', 'Active tab'],
   ['--text-highlight-bg', '--background-primary', 'Highlight vs note (should differ)'],
+  ['--background-modifier-border-focus', '--background-primary', 'Focus ring on note (3:1)'],
+  ['--text-error', '--background-primary', 'Error text on note'],
+  ['--text-success', '--background-primary', 'Success text on note'],
 ];
 
 // ---------- the plugin ----------
@@ -1108,6 +1156,9 @@ class ThemeLabPlugin extends Plugin {
       if (!issues) lint.push('- ✓ No banned properties, no duplicate declarations');
     }
 
+    const a11y = a11yCss(css);
+    const a11yBad = a11y.filter((f) => f.level === 'Error' || f.level === 'Warning');
+
     // contrast + variables, collected per scheme then written side by side
     const varNames = this.collectVarNames(css);
     const data = {};
@@ -1123,8 +1174,9 @@ class ThemeLabPlugin extends Plugin {
         if (!fg || !bgRaw || !fgS || !bgS) return { label, text: 'unset', ratio: null, mark: '—', fail: false };
         const bg = over(bgRaw, base); const f = over(fg, bg); const ratio = contrast(f, bg);
         const isHl = fgv === '--text-highlight-bg';
-        const mark = isHl ? (ratio >= 1.5 ? '✓' : '⚠') : ratio >= 4.5 ? '✓' : ratio >= 3 ? '△' : '✗';
-        return { label, text: `\`${fgS}\` on \`${bgS}\``, ratio, mark, fail: isHl ? ratio < 1.5 : ratio < 4.5 };
+        const isUi = fgv === '--background-modifier-border-focus';   // non-text contrast: 3:1 is the bar
+        const mark = isHl ? (ratio >= 1.5 ? '✓' : '⚠') : isUi ? (ratio >= 3 ? '✓' : '✗') : ratio >= 4.5 ? '✓' : ratio >= 3 ? '△' : '✗';
+        return { label, text: `\`${fgS}\` on \`${bgS}\``, ratio, mark, fail: isHl ? ratio < 1.5 : isUi ? ratio < 3 : ratio < 4.5 };
       });
       data[key] = { pairs, vars: Object.fromEntries(varNames.map((v) => [v, get(v)])) };
     }
@@ -1142,14 +1194,15 @@ class ThemeLabPlugin extends Plugin {
     // ---- write ----
     const when = new Date();
     out.length = 0;
-    out.push('---', `theme: ${currentThemeName()}`, `date: ${when.toISOString().slice(0, 10)}`, `lint: ${issues}`, `aa_fails_dark: ${fails('dark')}`, `aa_fails_light: ${fails('light')}`, 'tags: [theme-lab, report]', '---', '');
+    out.push('---', `theme: ${currentThemeName()}`, `date: ${when.toISOString().slice(0, 10)}`, `lint: ${issues}`, `aa_fails_dark: ${fails('dark')}`, `aa_fails_light: ${fails('light')}`, `a11y_issues: ${a11yBad.length}`, 'tags: [theme-lab, report]', '---', '');
     out.push(`# ${currentThemeName()} — theme report`, '');
     out.push(`\`${path}\` · ${css ? Math.round(css.length / 1024) + ' KB, ' + lineCount + ' lines' : 'theme.css not found'} · ${when.toLocaleString()}`, '');
     const summary = [];
     summary.push(issues ? `**Lint:** ${issues} issue${issues === 1 ? '' : 's'} the community review will flag.` : '**Lint:** clean.');
     summary.push(`**Contrast:** ${fails('dark')} below AA in dark, ${fails('light')} in light.`);
+    summary.push(`**Accessibility:** ${a11yBad.length ? `${a11yBad.filter((f) => f.level === 'Error').length} error${a11yBad.filter((f) => f.level === 'Error').length === 1 ? '' : 's'}, ${a11yBad.filter((f) => f.level === 'Warning').length} warning${a11yBad.filter((f) => f.level === 'Warning').length === 1 ? '' : 's'}.` : 'nothing flagged.'}`);
     summary.push(`**Variables:** ${varNames.length} declared. **Unreferenced classes on screen:** ${missing.length} of ${presentCount}.`);
-    out.push(`> [!${issues || fails('dark') || fails('light') ? 'warning' : 'success'}] Summary`, ...summary.map((l) => '> ' + l), '');
+    out.push(`> [!${issues || fails('dark') || fails('light') || a11yBad.length ? 'warning' : 'success'}] Summary`, ...summary.map((l) => '> ' + l), '');
 
     out.push('## Lint', '', ...lint, '');
 
@@ -1161,6 +1214,17 @@ class ThemeLabPlugin extends Plugin {
       out.push(`| ${(d || l || {}).label || CONTRAST_PAIRS[i][2]} | ${cell(d)} | ${cell(l)} |`);
     });
     out.push('');
+
+    out.push('## Accessibility', '', 'Checks the stylesheet can answer on its own. The contrast table above covers the rest; the focus-ring row is judged at 3:1, the bar for non-text.', '');
+    if (!a11y.length) out.push('- theme.css not readable — skipped.', '');
+    else {
+      const order = { Error: 0, Warning: 1, Info: 2, Pass: 3 };
+      for (const f of [...a11y].sort((x, y) => order[x.level] - order[y.level])) {
+        const mark = f.level === 'Error' ? '✗' : f.level === 'Warning' ? '⚠' : f.level === 'Info' ? 'ℹ' : '✓';
+        out.push(`- ${mark} **${f.rule}** — ${f.text}${f.line ? ` <small>line ~${f.line}</small>` : ''}`);
+      }
+      out.push('');
+    }
 
     out.push(`## Variables`, '', `> [!info]- ${varNames.length} variables the theme declares, with computed values`, '> ', '> | Variable | Dark | Light |', '> |---|---|---|');
     for (const v of varNames) {

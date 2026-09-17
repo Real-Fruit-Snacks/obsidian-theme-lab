@@ -36,6 +36,19 @@ One note with a summary at the top: the lint the community review runs (banned p
 
 ![A theme report: summary callout, lint, and the side-by-side contrast table](docs/assets/report.png)
 
+Since 1.1 the report also carries an **Accessibility** section — the checks a stylesheet can answer on its own:
+
+| Rule | What it catches |
+|---|---|
+| `a11y/reduced-motion` | Keyframe animations, moving or slow transitions, with no `@media (prefers-reduced-motion: reduce)` block. A 120 ms colour fade is not counted. |
+| `a11y/focus-ring` | `outline: none` with no `:focus-visible` replacement anywhere — keyboard users lose their place. |
+| `a11y/small-text` | Text under about 11px. |
+| `a11y/fixed-body-size` | Body text pinned to a pixel size, so the reader's font-size setting does nothing. |
+| `a11y/user-select` | Note text that cannot be selected. |
+| `a11y/text-shadow` | A glow on body text; fine as flavour, but check the contrast table. |
+
+The contrast table gained the focus ring, error text and success text. The focus ring is judged at 3:1, the bar for non-text contrast.
+
 ### The panel
 
 A right-sidebar panel with the view switcher, scheme and sidebar toggles, the five tools, a live inspector, **Scratch CSS** (applied instantly as a temporary stylesheet, persisted, and appended to `theme.css` under a dated comment when you're happy with it), a variable watch with colour swatches, and the list of matrix runs with their Matrix and Diff notes.

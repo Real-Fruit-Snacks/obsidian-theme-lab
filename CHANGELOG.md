@@ -2,6 +2,13 @@
 
 All notable changes to Theme Lab are listed here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and versions follow [Semantic Versioning](https://semver.org/).
 
+## [1.1.0] - 2026-09-17
+
+### Added
+- **Accessibility section in the theme report.** Checks the stylesheet can answer on its own: `a11y/reduced-motion` (keyframe animations, moving or slow transitions, with no `prefers-reduced-motion` block — short colour fades are not counted), `a11y/focus-ring` (`outline: none` with no `:focus-visible` replacement), `a11y/small-text` (under about 11px), `a11y/fixed-body-size` (body text pinned to pixels, so the reader's font-size setting does nothing), `a11y/user-select` (note text that cannot be selected) and `a11y/text-shadow` (a glow on body text lowers effective contrast).
+- Three more contrast rows: the focus ring, error text and success text. The focus ring is judged at 3:1, the bar for non-text contrast, not 4.5:1.
+- `a11y_issues` in the report's front matter, and a line in the summary callout.
+
 ## [1.0.2] - 2026-09-13
 
 ### Changed
@@ -30,6 +37,7 @@ All notable changes to Theme Lab are listed here. The format follows [Keep a Cha
 - **Scratch A/B** matrix option and **Compare latest matrix run with the previous one**, both producing pixel-diff sheets.
 - Commands to capture one screenshot and toggle the colour scheme.
 
+[1.1.0]: https://github.com/Real-Fruit-Snacks/obsidian-theme-lab/releases/tag/1.1.0
 [1.0.2]: https://github.com/Real-Fruit-Snacks/obsidian-theme-lab/releases/tag/1.0.2
 [1.0.1]: https://github.com/Real-Fruit-Snacks/obsidian-theme-lab/releases/tag/1.0.1
 [1.0.0]: https://github.com/Real-Fruit-Snacks/obsidian-theme-lab/releases/tag/1.0.0
