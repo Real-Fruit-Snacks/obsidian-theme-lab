@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="docs/assets/cover.png" alt="Theme Lab — build Obsidian themes from inside the app." width="100%">
+</p>
+
 # Theme Lab
 
 **Build Obsidian themes from inside the app.** Click any element and see which CSS rule wins. Capture every scheme × view × sidebar combination into contact sheets. Lint, contrast-check and inventory a theme in one report. Try CSS live, diff the screenshots, then append it to the theme.
@@ -5,8 +9,6 @@
 [![Site](https://img.shields.io/badge/site-real--fruit--snacks.github.io-E0554A)](https://real-fruit-snacks.github.io/obsidian-theme-lab/)
 [![Release](https://img.shields.io/github/v/release/Real-Fruit-Snacks/obsidian-theme-lab?color=E0554A)](https://github.com/Real-Fruit-Snacks/obsidian-theme-lab/releases/latest)
 [![License](https://img.shields.io/badge/license-MIT-lightgrey)](LICENSE)
-
-![Theme Lab: the panel with an inspected callout, a contact sheet and a theme report](docs/assets/hero.png)
 
 Theme Lab replaces the loop of *edit CSS → reload → screenshot → squint → repeat* that every theme author knows. It was built to ship [Glow](https://github.com/Real-Fruit-Snacks/obsidian-glow), [Outrun](https://github.com/Real-Fruit-Snacks/obsidian-outrun), [Dossier](https://github.com/Real-Fruit-Snacks/obsidian-dossier), [Comic](https://github.com/Real-Fruit-Snacks/obsidian-comic) and [Grimoire](https://github.com/Real-Fruit-Snacks/obsidian-grimoire).
 
