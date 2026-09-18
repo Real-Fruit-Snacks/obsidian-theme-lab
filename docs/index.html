@@ -27,6 +27,12 @@
   .cmd span { color:var(--text-2); font-size:14.5px; }
   @media (max-width:860px){ .shots-3 { grid-template-columns:1fr; } }
 </style>
+<style>
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+.hero.is-cover { padding: 56px 0 44px; }
+.hero.is-cover .cover { margin: 20px auto 26px; max-width: 1040px; }
+.hero.is-cover .cover img { width: 100%; border-radius: 16px; border: 1px solid var(--line); display: block; }
+</style>
 </head>
 <body>
 <div class="wrap">
@@ -42,15 +48,14 @@
     </nav>
   </header>
 
-  <div class="hero">
+  <div class="hero is-cover">
     <div class="pill"><b>New in 1.1</b> accessibility checks in the theme report</div>
-    <h1>Build Obsidian themes from inside the app.</h1>
-    <p class="lede">Click any element and see which CSS rule wins. Capture every scheme × view × sidebar combination into contact sheets. Lint, contrast-check and inventory a theme in one report.</p>
+    <h1 class="sr-only">Theme Lab — build Obsidian themes from inside the app.</h1>
+    <div class="cover"><img src="assets/cover.png" alt="Theme Lab: build Obsidian themes from inside the app — the inspector panel with scratch CSS and variables"></div>
     <div class="actions">
       <a class="btn primary" href="#install">Install Theme Lab</a>
       <a class="btn secondary" href="https://github.com/Real-Fruit-Snacks/obsidian-theme-lab">View source</a>
     </div>
-    <div class="frame"><img src="assets/hero.png" alt="Theme Lab: the panel with an inspected callout, a contact sheet and a theme report"></div>
   </div>
 
   <section id="features">
